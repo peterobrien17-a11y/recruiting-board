@@ -5,22 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Secure IT Recruiting — ATS</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg-primary:#ffffff;--bg-secondary:#f7f7f5;--bg-tertiary:#f0efe9;
-  --text-primary:#1a1a18;--text-secondary:#5c5c58;--text-tertiary:#9a9990;
-  --border-light:rgba(0,0,0,0.10);--border-mid:rgba(0,0,0,0.18);
-  --radius-md:8px;--radius-lg:12px;
-  --blue-bg:#E6F1FB;--blue-text:#0C447C;
-  --amber-bg:#FAEEDA;--amber-text:#633806;
-  --purple-bg:#EEEDFE;--purple-text:#3C3489;
-  --pink-bg:#FBEAF0;--pink-text:#72243E;
-  --green-bg:#EAF3DE;--green-text:#27500A;
-  --teal-bg:#E1F5EE;--teal-text:#085041;
-  --gray-bg:#F1EFE8;--gray-text:#444441;
-  --red-bg:#FCEBEB;--red-text:#791F1F;
-}
+:root{--bg-primary:#ffffff;--bg-secondary:#f7f7f5;--bg-tertiary:#f0efe9;--text-primary:#1a1a18;--text-secondary:#5c5c58;--text-tertiary:#9a9990;--border-light:rgba(0,0,0,0.10);--border-mid:rgba(0,0,0,0.18);--radius-md:8px;--radius-lg:12px;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-tertiary);color:var(--text-primary);}
 .app{display:flex;height:100vh;min-height:680px;}
 .sidebar{width:220px;min-width:220px;background:var(--bg-primary);border-right:0.5px solid var(--border-light);display:flex;flex-direction:column;overflow-y:auto;}
@@ -28,17 +16,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sb-logo-name{font-size:14px;font-weight:600;color:var(--text-primary);}
 .sb-logo-sub{font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-top:1px;}
 .ns{padding:10px 14px 3px;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;}
-.ni{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:13px;cursor:pointer;color:var(--text-secondary);transition:background 0.12s;border-radius:0;}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:background 0.12s;}
 .ni:hover{background:var(--bg-secondary);color:var(--text-primary);}
 .ni.active{background:var(--bg-secondary);color:var(--text-primary);font-weight:600;}
 .ni-ic{font-size:11px;width:14px;text-align:center;}
-.ni-badge{margin-left:auto;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--blue-bg);color:var(--blue-text);}
-.ni-badge.amber{background:var(--amber-bg);color:var(--amber-text);}
+.ni-badge{margin-left:auto;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#E6F1FB;color:#0C447C;}
 .sb-bottom{margin-top:auto;padding:10px 12px;border-top:0.5px solid var(--border-light);}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
-.topbar{background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);padding:11px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.tb-title{font-size:13px;font-weight:600;color:var(--text-primary);flex:1;}
-.tb-search{display:flex;align-items:center;gap:6px;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:5px 10px;width:210px;}
+.topbar{background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);padding:11px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;}
+.tb-title{font-size:13px;font-weight:600;color:var(--text-primary);flex:1;min-width:120px;}
+.tb-search{display:flex;align-items:center;gap:6px;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:5px 10px;width:190px;}
 .tb-search input{border:none;background:transparent;font-size:12px;color:var(--text-primary);outline:none;width:100%;}
 .tb-search input::placeholder{color:var(--text-tertiary);}
 .btn{padding:6px 12px;font-size:12px;border-radius:var(--radius-md);border:0.5px solid var(--border-mid);background:var(--bg-primary);cursor:pointer;color:var(--text-primary);display:inline-flex;align-items:center;gap:5px;transition:background 0.12s;font-family:inherit;}
@@ -46,110 +33,116 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-p{background:var(--text-primary);color:#fff;border-color:transparent;}
 .btn-p:hover{opacity:0.85;}
 .btn-sm{padding:4px 9px;font-size:11px;}
-.stats{display:flex;gap:9px;padding:12px 20px 0;background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);flex-shrink:0;}
+.btn-danger{background:#FCEBEB;color:#791F1F;border-color:#F09595;}
+.stats{display:flex;gap:9px;padding:12px 20px 0;background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);flex-shrink:0;flex-wrap:wrap;}
 .sc{background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px 13px;margin-bottom:10px;}
 .sc-lbl{font-size:10px;color:var(--text-tertiary);margin-bottom:1px;}
 .sc-val{font-size:18px;font-weight:600;color:var(--text-primary);}
+.sort-bar{display:flex;align-items:center;gap:8px;padding:7px 20px;background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);flex-shrink:0;flex-wrap:wrap;}
+.sort-lbl{font-size:11px;color:var(--text-tertiary);}
+.sort-btn{padding:3px 9px;font-size:11px;border-radius:var(--radius-md);border:0.5px solid var(--border-light);background:var(--bg-secondary);cursor:pointer;color:var(--text-secondary);font-family:inherit;transition:background 0.12s;}
+.sort-btn.active{background:var(--text-primary);color:#fff;border-color:transparent;}
 .ftabs{padding:0 20px;border-bottom:0.5px solid var(--border-light);background:var(--bg-primary);display:flex;gap:0;overflow-x:auto;flex-shrink:0;}
-.ftab{padding:10px 13px;font-size:12px;cursor:pointer;color:var(--text-secondary);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-0.5px;transition:color 0.12s;}
+.ftab{padding:10px 13px;font-size:12px;cursor:pointer;color:var(--text-secondary);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-0.5px;}
 .ftab.active{color:var(--text-primary);border-bottom-color:var(--text-primary);font-weight:600;}
 .content{flex:1;overflow:hidden;}
 .view{height:100%;overflow:hidden;}
 .kb-wrap{overflow-x:auto;overflow-y:hidden;height:100%;padding:16px 20px;}
 .kanban{display:flex;gap:10px;height:100%;min-width:max-content;}
 .kcol{display:flex;flex-direction:column;}
-.kcol-wide{width:320px;min-width:320px;}
-.kcol-med{width:255px;min-width:255px;}
+.kcol-wide{width:310px;min-width:310px;}
+.kcol-med{width:245px;min-width:245px;}
 .kch{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:var(--radius-md) var(--radius-md) 0 0;}
 .kch-label{font-size:11px;font-weight:600;}
 .kch-cnt{font-size:11px;opacity:0.65;}
 .kcb{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:7px;background:var(--bg-secondary);border-radius:0 0 var(--radius-md) var(--radius-md);}
 .kcb::-webkit-scrollbar{width:3px;}
 .kcb::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:2px;}
-.rcard{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:border-color 0.12s,transform 0.1s;}
+.rcard{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:11px;cursor:pointer;transition:border-color 0.12s,transform 0.1s;}
 .rcard:hover{border-color:var(--border-mid);transform:translateY(-1px);}
 .rcard.priority{border-left:2.5px solid #BA7517;}
 .rc-client{font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
-.rc-role{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:8px;line-height:1.3;}
-.rc-detail{font-size:11px;color:var(--text-secondary);margin-bottom:3px;}
+.rc-role{font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:7px;line-height:1.3;}
+.rc-detail{font-size:11px;color:var(--text-secondary);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rc-detail span{color:var(--text-tertiary);}
 .pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;display:inline-flex;align-items:center;}
-.progress-wrap{margin-top:8px;}
+.progress-wrap{margin-top:7px;}
 .prog-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text-tertiary);margin-bottom:3px;}
-.prog-track{height:5px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;}
+.prog-track{height:5px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:3px;}
 .list-wrap{overflow-y:auto;height:100%;padding:16px 20px;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-th{text-align:left;padding:7px 9px;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;border-bottom:0.5px solid var(--border-light);}
-td{padding:9px 9px;border-bottom:0.5px solid var(--border-light);vertical-align:middle;}
+th{text-align:left;padding:7px 9px;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;border-bottom:0.5px solid var(--border-light);cursor:pointer;user-select:none;white-space:nowrap;}
+th:hover{color:var(--text-primary);}
+td{padding:8px 9px;border-bottom:0.5px solid var(--border-light);vertical-align:middle;}
 tr:hover td{background:var(--bg-secondary);cursor:pointer;}
-.panel{position:absolute;right:0;top:0;bottom:0;width:400px;background:var(--bg-primary);border-left:0.5px solid var(--border-light);display:flex;flex-direction:column;z-index:20;transform:translateX(100%);transition:transform 0.22s ease;box-shadow:-4px 0 20px rgba(0,0,0,0.06);}
+.panel{position:absolute;right:0;top:0;bottom:0;width:420px;background:var(--bg-primary);border-left:0.5px solid var(--border-light);display:flex;flex-direction:column;z-index:20;transform:translateX(100%);transition:transform 0.22s ease;box-shadow:-4px 0 20px rgba(0,0,0,0.06);}
 .panel.open{transform:translateX(0);}
-.ph{padding:16px 16px 13px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:flex-start;}
+.ph{padding:14px 16px 12px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:flex-start;}
 .ph-name{font-size:14px;font-weight:600;margin-bottom:2px;}
 .ph-sub{font-size:12px;color:var(--text-secondary);}
 .ph-close{cursor:pointer;font-size:18px;color:var(--text-tertiary);padding:2px 6px;border-radius:4px;line-height:1;}
 .ph-close:hover{background:var(--bg-secondary);}
-.pb{flex:1;overflow-y:auto;padding:14px 16px;}
-.psec{margin-bottom:16px;}
+.pb{flex:1;overflow-y:auto;padding:13px 16px;}
+.psec{margin-bottom:15px;}
 .psec-t{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-tertiary);margin-bottom:7px;}
 .ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border-light);font-size:12px;}
 .ir:last-child{border-bottom:none;}
 .ir-l{color:var(--text-secondary);}
-.ir-v{color:var(--text-primary);font-weight:500;text-align:right;max-width:60%;}
-.fi{width:100%;font-size:12px;padding:6px 8px;border-radius:var(--radius-md);border:0.5px solid var(--border-mid);background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:inherit;cursor:pointer;}
-.cand-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border-light);font-size:12px;}
+.ir-v{color:var(--text-primary);font-weight:500;text-align:right;max-width:60%;word-break:break-word;}
+.fi{width:100%;font-size:12px;padding:6px 8px;border-radius:var(--radius-md);border:0.5px solid var(--border-mid);background:var(--bg-secondary);color:var(--text-primary);outline:none;font-family:inherit;}
+.fi:focus{background:var(--bg-primary);}
+.note-item{background:var(--bg-secondary);border-radius:var(--radius-md);padding:9px 11px;margin-bottom:7px;}
+.note-text{font-size:12px;color:var(--text-primary);line-height:1.5;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;}
+.note-meta{font-size:10px;color:var(--text-tertiary);}
+.resume-box{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px;font-size:11px;color:var(--text-secondary);line-height:1.6;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;}
+.cand-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border-light);}
 .cand-row:last-child{border-bottom:none;}
 .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
-.overlay{position:absolute;inset:0;z-index:19;display:none;background:transparent;}
+.overlay{position:absolute;inset:0;z-index:19;display:none;}
 .overlay.open{display:block;}
 .modal-bg{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);}
 .modal-bg.open{display:flex;}
-.modal{background:var(--bg-primary);border-radius:var(--radius-lg);border:0.5px solid var(--border-mid);width:460px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.12);}
+.modal{background:var(--bg-primary);border-radius:var(--radius-lg);border:0.5px solid var(--border-mid);width:480px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.12);}
 .mt{font-size:13px;font-weight:600;margin-bottom:13px;}
 .fl{margin-bottom:9px;}
 .fl-lbl{font-size:11px;color:var(--text-secondary);margin-bottom:3px;font-weight:500;}
 .fl2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;}
 .fl3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:9px;}
 .ma{display:flex;justify-content:flex-end;gap:7px;margin-top:13px;}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text-primary);color:#fff;padding:10px 16px;border-radius:var(--radius-md);font-size:12px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.loading{display:flex;align-items:center;justify-content:center;height:100%;font-size:13px;color:var(--text-tertiary);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:5px;flex-shrink:0;}
+.sync-dot.syncing{background:#BA7517;animation:blink 0.8s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.has-resume{background:#EAF3DE;color:#27500A;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;}
 .rep-wrap{overflow-y:auto;height:100%;padding:18px 22px;}
-.rgrid{display:grid;gap:9px;margin-bottom:18px;}
-.rcard2{background:var(--bg-secondary);border-radius:var(--radius-md);padding:9px 13px;}
-.rl{font-size:10px;color:var(--text-tertiary);margin-bottom:1px;}
-.rv{font-size:20px;font-weight:600;color:var(--text-primary);}
-.rs{font-size:11px;color:var(--text-secondary);margin-top:1px;}
-.badge{display:inline-flex;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;}
-.up{background:var(--teal-bg);color:var(--teal-text);}
-.dn{background:var(--red-bg);color:var(--red-text);}
 .rep-sec-t{font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:10px;}
-.lb-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border-light);}
-.lb-row:last-child{border-bottom:none;}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.bar-lbl{font-size:11px;color:var(--text-secondary);width:95px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bar-track{flex:1;height:7px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;}
-.bar-val{font-size:11px;font-weight:600;color:var(--text-primary);width:28px;text-align:right;}
-.unassigned{color:#D85A30;font-size:11px;}
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
 <div class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-name">Secure IT Recruiting</div>
     <div class="sb-logo-sub">Defense &amp; Gov Pipeline</div>
   </div>
   <div class="ns">Requisitions</div>
-  <div class="ni active" id="nav-reqs" onclick="setPage('reqs',this)"><span class="ni-ic">&#9670;</span> Open Reqs <span class="ni-badge" id="reqs-badge">0</span></div>
+  <div class="ni active" id="nav-reqs" onclick="setPage('reqs',this)"><span class="ni-ic">&#9670;</span> Open Reqs <span class="ni-badge" id="reqs-badge">—</span></div>
   <div class="ns">Submissions</div>
-  <div class="ni" id="nav-board" onclick="setPage('board',this)"><span class="ni-ic">&#9783;</span> Board <span class="ni-badge" id="tot-badge">0</span></div>
+  <div class="ni" id="nav-board" onclick="setPage('board',this)"><span class="ni-ic">&#9783;</span> Board <span class="ni-badge" id="tot-badge">—</span></div>
   <div class="ni" id="nav-list" onclick="setPage('list',this)"><span class="ni-ic">&#9776;</span> All Submissions</div>
+  <div class="ni" id="nav-archive" onclick="setPage('archive',this)"><span class="ni-ic">&#128193;</span> Archive <span class="ni-badge" id="arch-badge">—</span></div>
   <div class="ns">Clients</div>
   <div id="client-nav"></div>
   <div class="ns">Reports</div>
   <div class="ni" id="nav-biz" onclick="setPage('biz',this)"><span class="ni-ic">&#9650;</span> Business</div>
   <div class="ni" id="nav-team" onclick="setPage('team',this)"><span class="ni-ic">&#9651;</span> Team</div>
   <div class="sb-bottom">
+    <div style="display:flex;align-items:center;margin-bottom:8px;font-size:11px;color:var(--text-tertiary);">
+      <span class="sync-dot" id="sync-dot"></span><span id="sync-lbl">Connecting...</span>
+    </div>
     <button class="btn" style="width:100%;justify-content:center;font-size:11px;margin-bottom:6px;" onclick="openReqModal()">+ Add req</button>
     <button class="btn" style="width:100%;justify-content:center;font-size:11px;" onclick="openSubModal()">+ Add submission</button>
   </div>
@@ -157,16 +150,24 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
 <div class="main">
   <div class="topbar">
     <div class="tb-title" id="pg-title">Open requisitions</div>
-    <div class="tb-search"><span style="font-size:11px;color:var(--text-tertiary);">&#128269;</span><input type="text" placeholder="Search reqs, clients, roles..." id="srch" oninput="renderAll()"></div>
-    <select class="btn" id="rec-filter" onchange="renderAll()" style="cursor:pointer;font-size:11px;">
+    <div class="tb-search"><span style="font-size:11px;color:var(--text-tertiary);">&#128269;</span><input type="text" placeholder="Search..." id="srch" oninput="renderContent()"></div>
+    <select class="btn" id="rec-filter" onchange="renderContent()" style="cursor:pointer;font-size:11px;">
       <option value="">All recruiters</option>
       <option>Peter</option><option>Melizza</option><option>Nisha</option><option>Sunny</option><option>Jessi</option>
     </select>
     <button class="btn btn-p" id="top-add-btn" onclick="openReqModal()">+ Add req</button>
   </div>
   <div id="stats-bar" class="stats"></div>
+  <div id="sort-bar" class="sort-bar" style="display:none;">
+    <span class="sort-lbl">Sort by:</span>
+    <button class="sort-btn active" onclick="setSort('date',this)">Date submitted</button>
+    <button class="sort-btn" onclick="setSort('clearance',this)">Clearance</button>
+    <button class="sort-btn" onclick="setSort('position',this)">Position</button>
+    <button class="sort-btn" onclick="setSort('client',this)">Client</button>
+    <button class="sort-btn" onclick="setSort('stage',this)">Status</button>
+  </div>
   <div class="ftabs" id="ftabs"></div>
-  <div class="content"><div class="view" id="view-area"></div></div>
+  <div class="content"><div class="view" id="view-area"><div class="loading">Connecting to database...</div></div></div>
   <div class="overlay" id="overlay" onclick="closePanel()"></div>
   <div class="panel" id="panel">
     <div class="ph">
@@ -178,15 +179,12 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
 </div>
 </div>
 
-<!-- Req Modal -->
 <div class="modal-bg" id="req-modal">
 <div class="modal">
   <div class="mt">Add requisition</div>
   <div class="fl2">
     <div class="fl" style="margin:0"><div class="fl-lbl">Client</div><select class="fi" id="rq-client"></select></div>
-    <div class="fl" style="margin:0"><div class="fl-lbl">Status</div>
-      <select class="fi" id="rq-status"><option value="priority">Priority</option><option value="active">Active</option><option value="hold">Hold</option></select>
-    </div>
+    <div class="fl" style="margin:0"><div class="fl-lbl">Status</div><select class="fi" id="rq-status"><option value="priority">Priority</option><option value="active">Active</option><option value="hold">Hold</option></select></div>
   </div>
   <div class="fl"><div class="fl-lbl">Role / Position</div><input class="fi" id="rq-role" placeholder="e.g. Sr. Cloud Engineer III"></div>
   <div class="fl3">
@@ -194,9 +192,7 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
     <div class="fl" style="margin:0"><div class="fl-lbl">Req ID</div><input class="fi" id="rq-reqid" placeholder="e.g. 26-022"></div>
     <div class="fl" style="margin:0"><div class="fl-lbl">Recruiter</div><select class="fi" id="rq-rec"><option value="">Unassigned</option><option>Peter</option><option>Melizza</option><option>Nisha</option><option>Sunny</option><option>Jessi</option></select></div>
   </div>
-  <div class="fl"><div class="fl-lbl">Clearance required</div>
-    <select class="fi" id="rq-clr"><option>TS/SCI with CI poly</option><option>TS/SCI with Full Scope Poly</option><option>TS/SCI</option><option>TS</option><option>Secret</option><option>FSP requirements</option></select>
-  </div>
+  <div class="fl"><div class="fl-lbl">Clearance required</div><select class="fi" id="rq-clr"><option>TS/SCI with CI poly</option><option>TS/SCI with Full Scope Poly</option><option>TS/SCI</option><option>TS</option><option>Secret</option><option>FSP requirements</option></select></div>
   <div class="fl2">
     <div class="fl" style="margin:0"><div class="fl-lbl">Salary range</div><input class="fi" id="rq-sal" placeholder="e.g. $150,000 – $180,000"></div>
     <div class="fl" style="margin:0"><div class="fl-lbl">Location</div><input class="fi" id="rq-loc" placeholder="e.g. Reston, VA"></div>
@@ -206,7 +202,6 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
 </div>
 </div>
 
-<!-- Sub Modal -->
 <div class="modal-bg" id="sub-modal">
 <div class="modal">
   <div class="mt">Add submission</div>
@@ -226,12 +221,20 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
       </select>
     </div>
   </div>
-  <div class="fl"><div class="fl-lbl">Notes</div><textarea class="fi" id="s-notes" style="height:50px;resize:none;"></textarea></div>
+  <div class="fl"><div class="fl-lbl">Clearance</div><select class="fi" id="s-clr"><option value="">— select —</option><option>TS/SCI with CI poly</option><option>TS/SCI with Full Scope Poly</option><option>TS/SCI</option><option>TS</option><option>Secret</option><option>FSP requirements</option></select></div>
+  <div class="fl"><div class="fl-lbl">Initial notes</div><textarea class="fi" id="s-notes" style="height:50px;resize:none;"></textarea></div>
+  <div class="fl"><div class="fl-lbl">Resume text (paste from PDF or Word)</div><textarea class="fi" id="s-resume" style="height:80px;resize:vertical;" placeholder="Paste resume text here..."></textarea></div>
   <div class="ma"><button class="btn" onclick="closeSubModal()">Cancel</button><button class="btn btn-p" onclick="addSub()">Add submission</button></div>
 </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+const SUPABASE_URL='https://fjojakpqjoxleaegstvj.supabase.co';
+const SUPABASE_KEY='sb_publishable_uk0JRuc9cLm3NqQZMBjYFA_9QgbuVOg';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
 const CLIENTS=['Rapid Strategy','SecureStrux','Nemean Solutions','Accelera Solutions','Teksynap','Bridge Defense','PatriotIQ','Cymertek','Alphasix','Maximus','FederatedIT','I2X','SSATI','Weeghman & Briggs','Saliense'];
 const STAGES=[
   {id:'submitted',label:'Submitted',bg:'#E6F1FB',text:'#0C447C'},
@@ -249,316 +252,389 @@ const REQ_STAGES=[
   {id:'hold',label:'Hold',bg:'#F1EFE8',text:'#444441'},
 ];
 const RECRUITERS=['Peter','Melizza','Nisha','Sunny','Jessi'];
-
-let page='reqs',filterClient='all',nextRid=100,nextSid=200;
-let charts=[];
-
-let reqs=[
-  {id:1,client:'Rapid Strategy',role:'ISSE',status:'hold',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$127,000 – $170,000',location:'Reston, VA / Tysons, VA',notes:'Must be hands on and show ISSE experience.'},
-  {id:2,client:'Rapid Strategy',role:'Cloud Engineer III',status:'priority',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$175,000 – $220,000',location:'Reston, VA',notes:'Need 3 seats filled.'},
-  {id:3,client:'Rapid Strategy',role:'Sr. Data Engineer III',status:'priority',seats:4,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$152,000 – $188,000',location:'Reston, VA / Tysons, VA',notes:''},
-  {id:4,client:'Rapid Strategy',role:'DevSecOps Engineer',status:'priority',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$149,000 – $177,000',location:'Reston, VA / Tysons, VA',notes:''},
-  {id:5,client:'SecureStrux',role:'Software Engineer – TRK',status:'active',seats:1,reqid:'25-568',recruiter:'Peter',clearance:'Secret',salary:'$100,000 – $148,000',location:'Huntsville, AL',notes:''},
-  {id:6,client:'SecureStrux',role:'Systems Engineer',status:'active',seats:1,reqid:'26-022',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Colorado Springs, CO / Huntsville, AL',notes:''},
-  {id:7,client:'SecureStrux',role:'Performance Assessment Engineer',status:'active',seats:1,reqid:'26-026',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Huntsville, AL',notes:''},
-  {id:8,client:'SecureStrux',role:'System Test Data Manager',status:'active',seats:1,reqid:'26-049',recruiter:'',clearance:'Secret',salary:'$100,000 – $148,000',location:'Colorado Springs, CO (Schriever SFB)',notes:''},
-  {id:9,client:'SecureStrux',role:'Systems Architect',status:'active',seats:1,reqid:'26-060',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Colorado Springs, CO (Schriever SFB)',notes:''},
-  {id:10,client:'Teksynap',role:'Sr. Network Engineer',status:'priority',seats:2,reqid:'',recruiter:'',clearance:'',salary:'$150,000 – $180,000',location:'',notes:''},
-  {id:11,client:'Nemean Solutions',role:'Sr. Network Administrator – PCLOB',status:'active',seats:1,reqid:'',recruiter:'Peter',clearance:'TS/SCI',salary:'$160,000 – $170,000',location:'',notes:'Michael Montecinos – Start date 3/23.'},
-  {id:12,client:'Nemean Solutions',role:'Software Engineer – Senior – CCSA',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS',salary:'$160,000 – $170,000',location:'',notes:''},
-  {id:13,client:'Bridge Defense',role:'Database Engineer/Architect – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$130,000',location:'Wright-Patterson AFB, OH',notes:''},
-  {id:14,client:'Bridge Defense',role:'Systems Engineer – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'',location:'Wright-Patterson AFB, OH',notes:''},
-  {id:15,client:'Bridge Defense',role:'Systems Administrator – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'',location:'Wright-Patterson AFB, OH',notes:''},
-  {id:16,client:'PatriotIQ',role:'Cyber Engineer',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'IAT Level II, 6-8 years IT experience.'},
-  {id:17,client:'PatriotIQ',role:'ISSO',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'10 years experience as ISSO, IAM Level II or higher.'},
-  {id:18,client:'PatriotIQ',role:'Tier 1 Sys Admins',status:'active',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'Require IAT Level II.'},
-  {id:19,client:'PatriotIQ',role:'Security System Maintenance Techs',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'ACS/IDS, CCTV, Lenel, Genetec, Bosch, IP cameras.'},
-  {id:20,client:'PatriotIQ',role:'Network Administrators',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'6 years experience, IAT Level II required.'},
-  {id:21,client:'Accelera Solutions',role:'BeyondTrust Engineer',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$180,000',location:'',notes:''},
-  {id:22,client:'Accelera Solutions',role:'ServiceNow ITOM Engineer',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$180,000',location:'',notes:''},
-  {id:23,client:'Accelera Solutions',role:'ServiceNow Architect HAM',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$220,000',location:'',notes:''},
-  {id:24,client:'Accelera Solutions',role:'Cloud Project Engineer Admin',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$160,000',location:'',notes:''},
+const SEED_REQS=[
+  {client:'Rapid Strategy',role:'ISSE',status:'hold',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$127,000 – $170,000',location:'Reston, VA / Tysons, VA',notes:'Must be hands on and show ISSE experience.'},
+  {client:'Rapid Strategy',role:'Cloud Engineer III',status:'priority',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$175,000 – $220,000',location:'Reston, VA',notes:'Need 3 seats filled.'},
+  {client:'Rapid Strategy',role:'Sr. Data Engineer III',status:'priority',seats:4,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$152,000 – $188,000',location:'Reston, VA / Tysons, VA',notes:''},
+  {client:'Rapid Strategy',role:'DevSecOps Engineer',status:'priority',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$149,000 – $177,000',location:'Reston, VA / Tysons, VA',notes:''},
+  {client:'SecureStrux',role:'Software Engineer – TRK',status:'active',seats:1,reqid:'25-568',recruiter:'Peter',clearance:'Secret',salary:'$100,000 – $148,000',location:'Huntsville, AL',notes:''},
+  {client:'SecureStrux',role:'Systems Engineer',status:'active',seats:1,reqid:'26-022',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Colorado Springs, CO / Huntsville, AL',notes:''},
+  {client:'SecureStrux',role:'Performance Assessment Engineer',status:'active',seats:1,reqid:'26-026',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Huntsville, AL',notes:''},
+  {client:'SecureStrux',role:'System Test Data Manager',status:'active',seats:1,reqid:'26-049',recruiter:'',clearance:'Secret',salary:'$100,000 – $148,000',location:'Colorado Springs, CO (Schriever SFB)',notes:''},
+  {client:'SecureStrux',role:'Systems Architect',status:'active',seats:1,reqid:'26-060',recruiter:'',clearance:'Secret',salary:'$120,000 – $163,000',location:'Colorado Springs, CO (Schriever SFB)',notes:''},
+  {client:'Teksynap',role:'Sr. Network Engineer',status:'priority',seats:2,reqid:'',recruiter:'',clearance:'',salary:'$150,000 – $180,000',location:'',notes:''},
+  {client:'Nemean Solutions',role:'Sr. Network Administrator – PCLOB',status:'active',seats:1,reqid:'',recruiter:'Peter',clearance:'TS/SCI',salary:'$160,000 – $170,000',location:'',notes:'Michael Montecinos start date 3/23.'},
+  {client:'Nemean Solutions',role:'Software Engineer – Senior – CCSA',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS',salary:'$160,000 – $170,000',location:'',notes:''},
+  {client:'Bridge Defense',role:'Database Engineer/Architect – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'$130,000',location:'Wright-Patterson AFB, OH',notes:''},
+  {client:'Bridge Defense',role:'Systems Engineer – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'',location:'Wright-Patterson AFB, OH',notes:''},
+  {client:'Bridge Defense',role:'Systems Administrator – Senior',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with CI poly',salary:'',location:'Wright-Patterson AFB, OH',notes:''},
+  {client:'PatriotIQ',role:'Cyber Engineer',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'IAT Level II, 6-8 years IT experience.'},
+  {client:'PatriotIQ',role:'ISSO',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'10 years experience, IAM Level II or higher.'},
+  {client:'PatriotIQ',role:'Tier 1 Sys Admins',status:'active',seats:3,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'Require IAT Level II. Need 3.'},
+  {client:'PatriotIQ',role:'Security System Maintenance Techs',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'ACS/IDS, CCTV, Lenel, Genetec, Bosch, IP cameras.'},
+  {client:'PatriotIQ',role:'Network Administrators',status:'active',seats:1,reqid:'',recruiter:'',clearance:'TS/SCI with Full Scope Poly',salary:'',location:'',notes:'6 years experience, IAT Level II required.'},
+  {client:'Accelera Solutions',role:'BeyondTrust Engineer',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$180,000',location:'',notes:''},
+  {client:'Accelera Solutions',role:'ServiceNow ITOM Engineer',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$180,000',location:'',notes:''},
+  {client:'Accelera Solutions',role:'ServiceNow Architect HAM',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$220,000',location:'',notes:''},
+  {client:'Accelera Solutions',role:'Cloud Project Engineer Admin',status:'active',seats:1,reqid:'',recruiter:'Nisha',clearance:'Secret',salary:'$160,000',location:''},
+];
+const SEED_SUBS=[
+  {name:'Kai Bawcom',client:'SecureStrux',role:'Software Engineer – TRK',stage:'placed',recruiter:'Peter',clearance:'Secret',salary:'$100k–$148k',date:'2026-01-20',notes:'Start date 3/9.',resume_text:''},
+  {name:'Michael Montecinos',client:'Nemean Solutions',role:'Sr. Network Administrator – PCLOB',stage:'placed',recruiter:'Peter',clearance:'TS/SCI',salary:'$160–$170k',date:'2026-03-11',notes:'Start date 3/23.',resume_text:''},
+  {name:'Jiaming Niu',client:'Accelera Solutions',role:'ServiceNow Architect SAM',stage:'placed',recruiter:'Nisha',clearance:'Secret',salary:'$220k',date:'2026-01-21',notes:'Start date 3/23.',resume_text:''},
+  {name:'Terell Burgess',client:'Rapid Strategy',role:'Sr. Business Analyst III',stage:'offer',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'2026-01-09',notes:'Offer out – Metro approved 2/13. Start 3/30.',resume_text:''},
+  {name:'Bertha Taku',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',stage:'screening',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-17',notes:'RS interviewed 3/18.',resume_text:''},
+  {name:'Adeyinka Adekunle',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',stage:'interview_pm',recruiter:'Peter',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-05',notes:'RS interviewed and submitted 3/11.',resume_text:''},
+  {name:'Carlos Bradford',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',stage:'submitted',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-24',notes:'',resume_text:''},
+  {name:'Marvin Nemi',client:'Rapid Strategy',role:'ISSE',stage:'submitted',recruiter:'Jessi',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-25',notes:'',resume_text:''},
+  {name:'Abba-Joseph Awano',client:'Rapid Strategy',role:'Sr. Data Engineer III',stage:'submitted',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-17',notes:'',resume_text:''},
+  {name:'Nahom Alem',client:'Rapid Strategy',role:'Sr. Data Engineer',stage:'interview_pm',recruiter:'Peter',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-17',notes:'RS interviewed 3/18.',resume_text:''},
+  {name:'William Estes',client:'Rapid Strategy',role:'Sr. ISSE',stage:'submitted',recruiter:'Nisha',clearance:'TS/SCI with CI poly',salary:'',date:'2026-03-19',notes:'',resume_text:''},
+  {name:'Jordan Taylor',client:'PatriotIQ',role:'Network Administrator 3',stage:'submitted',recruiter:'Peter',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'2026-03-24',notes:'',resume_text:''},
+  {name:'Jordan Taylor',client:'Cymertek',role:'Network System Administrator',stage:'submitted',recruiter:'Peter',clearance:'FSP requirements',salary:'',date:'2026-03-24',notes:'',resume_text:''},
+  {name:'Gareth Robinson',client:'Cymertek',role:'CNDA',stage:'submitted',recruiter:'Nisha',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'2026-03-26',notes:'',resume_text:''},
+  {name:'Bryan Moore',client:'Cymertek',role:'Cybersecurity Engineer',stage:'interview_client',recruiter:'Nisha',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'2026-03-26',notes:'Cymertek wants to speak with Bryan.',resume_text:''},
+  {name:'Travis Baldwin',client:'SecureStrux',role:'System Test Data Manager',stage:'submitted',recruiter:'Peter',clearance:'Secret',salary:'',date:'2026-03-17',notes:'',resume_text:''},
+  {name:'Robert Kelley',client:'SecureStrux',role:'Systems Engineer',stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'2026-03-20',notes:'',resume_text:''},
+  {name:'Cameron Walker',client:'SecureStrux',role:'Performance Assessment Engineer',stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'2026-03-20',notes:'',resume_text:''},
+  {name:'Morgan Hughes',client:'SecureStrux',role:'Systems Architect/Engineer',stage:'submitted',recruiter:'Peter',clearance:'Secret',salary:'',date:'2026-03-25',notes:'',resume_text:''},
+  {name:'JOHN DICKSON TIWU AKWA',client:'Accelera Solutions',role:'ServiceNow ITOM Engineer',stage:'submitted',recruiter:'Nisha',clearance:'Secret',salary:'',date:'2026-03-24',notes:'',resume_text:''},
+  {name:'Cindy Trout',client:'Accelera Solutions',role:'ServiceNow HAM Architect',stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'2026-03-25',notes:'',resume_text:''},
+  {name:'David Smith',client:'Accelera Solutions',role:'Business Analyst SAM',stage:'interview_client',recruiter:'Nisha',clearance:'Secret',salary:'',date:'2026-02-10',notes:'Interview requested.',resume_text:''},
+  {name:'James Rook',client:'Teksynap',role:'Senior Network Engineer',stage:'submitted',recruiter:'Melizza',clearance:'',salary:'',date:'2026-02-04',notes:'',resume_text:''},
 ];
 
-let subs=[
-  {id:1,name:'Kai Bawcom',client:'SecureStrux',role:'Software Engineer – TRK',reqId:5,stage:'placed',recruiter:'Peter',clearance:'Secret',salary:'$100k–$148k',date:'Jan 20',notes:'Start date 3/9.'},
-  {id:2,name:'Michael Montecinos',client:'Nemean Solutions',role:'Sr. Network Administrator – PCLOB',reqId:11,stage:'placed',recruiter:'Peter',clearance:'TS/SCI',salary:'$160–$170k',date:'Mar 11',notes:'Start date 3/23.'},
-  {id:3,name:'Jiaming Niu',client:'Accelera Solutions',role:'ServiceNow Architect SAM',reqId:null,stage:'placed',recruiter:'Nisha',clearance:'Secret',salary:'$220k',date:'Jan 21',notes:'Start date 3/23.'},
-  {id:4,name:'Terell Burgess',client:'Rapid Strategy',role:'Sr. Business Analyst III',reqId:null,stage:'offer',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'Jan 9',notes:'Offer out – Metro approved 2/13. Start 3/30.'},
-  {id:5,name:'Bertha Taku',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',reqId:2,stage:'screening',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 17',notes:'RS interviewed 3/18.'},
-  {id:6,name:'Adeyinka Adekunle',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',reqId:2,stage:'interview_pm',recruiter:'Peter',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 5',notes:'RS interviewed and submitted 3/11.'},
-  {id:7,name:'Carlos Bradford',client:'Rapid Strategy',role:'Sr. Cloud Engineer III',reqId:2,stage:'submitted',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 24',notes:''},
-  {id:8,name:'Marvin Nemi',client:'Rapid Strategy',role:'ISSE',reqId:1,stage:'submitted',recruiter:'Jessi',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 25',notes:''},
-  {id:9,name:'Abba-Joseph Awano',client:'Rapid Strategy',role:'Sr. Data Engineer III',reqId:3,stage:'submitted',recruiter:'Melizza',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 17',notes:''},
-  {id:10,name:'Nahom Alem',client:'Rapid Strategy',role:'Sr. Data Engineer',reqId:3,stage:'interview_pm',recruiter:'Peter',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 17',notes:'RS interviewed 3/18.'},
-  {id:11,name:'William Estes',client:'Rapid Strategy',role:'Sr. ISSE',reqId:1,stage:'submitted',recruiter:'Nisha',clearance:'TS/SCI with CI poly',salary:'',date:'Mar 19',notes:''},
-  {id:12,name:'Jordan Taylor',client:'PatriotIQ',role:'Network Administrator 3',reqId:20,stage:'submitted',recruiter:'Peter',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'Mar 24',notes:''},
-  {id:13,name:'Jordan Taylor',client:'Cymertek',role:'Network System Administrator',reqId:null,stage:'submitted',recruiter:'Peter',clearance:'FSP requirements',salary:'',date:'Mar 24',notes:''},
-  {id:14,name:'Gareth Robinson',client:'Cymertek',role:'CNDA',reqId:null,stage:'submitted',recruiter:'Nisha',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'Mar 26',notes:''},
-  {id:15,name:'Bryan Moore',client:'Cymertek',role:'Cybersecurity Engineer',reqId:null,stage:'interview_client',recruiter:'Nisha',clearance:'TS/SCI with Full Scope Poly',salary:'',date:'Mar 26',notes:'Cymertek wants to speak with Bryan.'},
-  {id:16,name:'Travis Baldwin',client:'SecureStrux',role:'System Test Data Manager',reqId:8,stage:'submitted',recruiter:'Peter',clearance:'Secret',salary:'',date:'Mar 17',notes:''},
-  {id:17,name:'Robert Kelley',client:'SecureStrux',role:'Systems Engineer',reqId:6,stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'Mar 20',notes:''},
-  {id:18,name:'Cameron Walker',client:'SecureStrux',role:'Performance Assessment Engineer',reqId:7,stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'Mar 20',notes:''},
-  {id:19,name:'Morgan Hughes',client:'SecureStrux',role:'Systems Architect/Engineer',reqId:9,stage:'submitted',recruiter:'Peter',clearance:'Secret',salary:'',date:'Mar 25',notes:''},
-  {id:20,name:'JOHN DICKSON TIWU AKWA',client:'Accelera Solutions',role:'ServiceNow ITOM Engineer',reqId:22,stage:'submitted',recruiter:'Nisha',clearance:'Secret',salary:'',date:'Mar 24',notes:''},
-  {id:21,name:'Cindy Trout',client:'Accelera Solutions',role:'ServiceNow HAM Architect',reqId:23,stage:'submitted',recruiter:'Melizza',clearance:'Secret',salary:'',date:'Mar 25',notes:''},
-  {id:22,name:'David Smith',client:'Accelera Solutions',role:'Business Analyst SAM',reqId:null,stage:'interview_client',recruiter:'Nisha',clearance:'Secret',salary:'',date:'Feb 10',notes:'Interview requested.'},
-  {id:23,name:'James Rook',client:'Teksynap',role:'Senior Network Engineer',reqId:10,stage:'submitted',recruiter:'Melizza',clearance:'',salary:'',date:'Feb 4',notes:''},
-];
+let page='reqs',filterClient='all',sortBy='date',sortDir='desc';
+let reqs=[],subs=[],charts=[];
 
-function stg(id){return STAGES.find(s=>s.id===id)||STAGES[0];}
-function rqStg(id){return REQ_STAGES.find(s=>s.id===id)||REQ_STAGES[1];}
-function avCol(seed){
-  const bgs=['#EEEDFE','#E6F1FB','#E1F5EE','#FAEEDA','#FAECE7','#EAF3DE'];
-  const ts=['#3C3489','#0C447C','#085041','#633806','#993C1D','#27500A'];
-  const i=(typeof seed==='string'?seed.charCodeAt(0):seed)%bgs.length;
-  return{bg:bgs[i],text:ts[i]};
-}
-function initials(name){const p=name.trim().split(' ');return(p[0][0]+(p[p.length-1]?.[0]||'')).toUpperCase();}
-function subsForReq(r){return subs.filter(s=>s.reqId===r.id||(s.client===r.client&&s.role.toLowerCase().includes(r.role.split(' ')[0].toLowerCase())));}
+const stg=id=>STAGES.find(s=>s.id===id)||STAGES[0];
+const rqStg=id=>REQ_STAGES.find(s=>s.id===id)||REQ_STAGES[1];
+function avCol(s){const b=['#EEEDFE','#E6F1FB','#E1F5EE','#FAEEDA','#FAECE7','#EAF3DE'],t=['#3C3489','#0C447C','#085041','#633806','#993C1D','#27500A'],i=(typeof s==='string'?s.charCodeAt(0):s)%b.length;return{bg:b[i],text:t[i]};}
+function initials(n){const p=n.trim().split(' ');return(p[0][0]+(p[p.length-1]?.[0]||'')).toUpperCase();}
+function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});}catch(e){return d;}}
+function setSyncing(v){const dot=document.getElementById('sync-dot'),lbl=document.getElementById('sync-lbl');if(v){dot.className='sync-dot syncing';lbl.textContent='Saving...';}else{dot.className='sync-dot';lbl.textContent='Connected';}}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function destroyCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
+function subsForReq(r){return subs.filter(s=>s.req_id===r.id||(s.client===r.client&&s.role&&r.role&&s.role.toLowerCase().includes(r.role.split(' ')[0].toLowerCase())));}
 function activeSubs(r){return subsForReq(r).filter(s=>!['pass','declined'].includes(s.stage));}
 function placedSubs(r){return subsForReq(r).filter(s=>s.stage==='placed');}
-function destroyCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
 
-function setPage(p,el){
-  page=p;filterClient='all';
-  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  const btn=document.getElementById('top-add-btn');
-  if(p==='reqs'){btn.textContent='+ Add req';btn.onclick=openReqModal;}
-  else{btn.textContent='+ Add submission';btn.onclick=openSubModal;}
+async function seedIfEmpty(){
+  const{data:ex}=await sb.from('reqs').select('id').limit(1);
+  if(!ex||ex.length===0){
+    await sb.from('reqs').insert(SEED_REQS);
+    await sb.from('submissions').insert(SEED_SUBS);
+    showToast('Database initialized with your data!');
+  }
+}
+async function loadData(){
+  setSyncing(true);
+  try{
+    await seedIfEmpty();
+    const[{data:r,error:re},{data:s,error:se}]=await Promise.all([
+      sb.from('reqs').select('*').order('id'),
+      sb.from('submissions').select('*').order('created_at',{ascending:false})
+    ]);
+    if(re||se){document.getElementById('view-area').innerHTML='<div class="loading" style="color:#D85A30;">Database error — check Supabase RLS settings.</div>';setSyncing(false);return;}
+    reqs=r||[];subs=s||[];
+  }catch(err){
+    document.getElementById('view-area').innerHTML='<div class="loading" style="color:#D85A30;">Connection failed. Check your internet connection.</div>';
+    setSyncing(false);return;
+  }
+  setSyncing(false);
   renderAll();
 }
-function setFilter(c,el){
-  filterClient=c;
-  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  renderContent();
-}
+
 function getFilteredReqs(){
-  const q=document.getElementById('srch').value.toLowerCase();
-  const rec=document.getElementById('rec-filter').value;
-  return reqs.filter(r=>{
-    const mc=filterClient==='all'||r.client===filterClient;
-    const mr=!rec||r.recruiter===rec;
-    const mq=!q||r.role.toLowerCase().includes(q)||r.client.toLowerCase().includes(q)||(r.reqid||'').toLowerCase().includes(q);
-    return mc&&mr&&mq;
+  const q=document.getElementById('srch').value.toLowerCase(),rec=document.getElementById('rec-filter').value;
+  return reqs.filter(r=>(filterClient==='all'||r.client===filterClient)&&(!rec||r.recruiter===rec)&&(!q||r.role.toLowerCase().includes(q)||r.client.toLowerCase().includes(q)||(r.reqid||'').toLowerCase().includes(q)));
+}
+function getFilteredSubs(archive=false){
+  const q=document.getElementById('srch').value.toLowerCase(),rec=document.getElementById('rec-filter').value;
+  let list=subs.filter(s=>{
+    const isArch=['pass','declined'].includes(s.stage);
+    if(archive!==isArch)return false;
+    return(filterClient==='all'||s.client===filterClient)&&(!rec||s.recruiter===rec)&&(!q||s.name.toLowerCase().includes(q)||s.role.toLowerCase().includes(q)||s.client.toLowerCase().includes(q)||(s.clearance||'').toLowerCase().includes(q));
   });
-}
-function getFilteredSubs(){
-  const q=document.getElementById('srch').value.toLowerCase();
-  const rec=document.getElementById('rec-filter').value;
-  return subs.filter(s=>{
-    const mc=filterClient==='all'||s.client===filterClient;
-    const mr=!rec||s.recruiter===rec;
-    const mq=!q||s.name.toLowerCase().includes(q)||s.role.toLowerCase().includes(q)||s.client.toLowerCase().includes(q);
-    return mc&&mr&&mq;
+  const dir=sortDir==='asc'?1:-1;
+  list.sort((a,b)=>{
+    const k={date:'date',clearance:'clearance',position:'role',client:'client',stage:'stage'}[sortBy]||'date';
+    return(a[k]||'')>(b[k]||'')?dir:-dir;
   });
+  return list;
 }
-function renderAll(){
-  renderSidebar();renderStats();renderTabs();renderContent();
+function setSort(s,el){
+  if(sortBy===s)sortDir=sortDir==='asc'?'desc':'asc';else{sortBy=s;sortDir='desc';}
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderContent();
 }
+function setPage(p,el){
+  page=p;filterClient='all';
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+  const btn=document.getElementById('top-add-btn');
+  btn.textContent=p==='reqs'?'+ Add req':'+ Add submission';
+  btn.onclick=p==='reqs'?openReqModal:openSubModal;
+  closePanel();renderAll();
+}
+function setFilter(c,el){filterClient=c;document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderContent();}
+function quickFilter(c,el){filterClient=c;document.querySelectorAll('.ni,.ftab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderAll();}
+
+function renderAll(){renderSidebar();renderStats();renderSortBarVis();renderTabs();renderContent();}
 function renderSidebar(){
-  const cn=document.getElementById('client-nav');
-  const allC=[...new Set([...reqs.map(r=>r.client),...subs.map(s=>s.client)])].sort();
-  cn.innerHTML=allC.map(c=>{
-    const rc=reqs.filter(r=>r.client===c).length;
-    const sc2=subs.filter(s=>s.client===c).length;
-    return`<div class="ni" onclick="quickFilter('${c.replace(/'/g,"\\'")}',this)"><span class="ni-ic" style="font-size:8px;">&#9679;</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c}</span><span class="ni-badge">${rc}r ${sc2}s</span></div>`;
+  const allC=[...new Set([...reqs.map(r=>r.client),...subs.map(s=>s.client)])].filter(Boolean).sort();
+  document.getElementById('client-nav').innerHTML=allC.map(c=>{
+    const rc=reqs.filter(r=>r.client===c).length,sc=subs.filter(s=>s.client===c).length;
+    return`<div class="ni" onclick="quickFilter('${c.replace(/'/g,"\\'")}',this)"><span class="ni-ic" style="font-size:8px;">&#9679;</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${c}</span><span class="ni-badge">${rc}r ${sc}s</span></div>`;
   }).join('');
   document.getElementById('reqs-badge').textContent=reqs.filter(r=>r.status!=='hold').length;
-  document.getElementById('tot-badge').textContent=subs.length;
+  document.getElementById('tot-badge').textContent=subs.filter(s=>!['pass','declined'].includes(s.stage)).length;
+  document.getElementById('arch-badge').textContent=subs.filter(s=>['pass','declined'].includes(s.stage)).length;
 }
+function renderSortBarVis(){document.getElementById('sort-bar').style.display=(page==='list'||page==='archive')?'flex':'none';}
 function renderStats(){
-  const sb=document.getElementById('stats-bar');
+  const sb2=document.getElementById('stats-bar');
   if(page==='reqs'){
-    const pr=reqs.filter(r=>r.status==='priority').length;
-    const ac=reqs.filter(r=>r.status==='active').length;
-    const ho=reqs.filter(r=>r.status==='hold').length;
-    const ts=reqs.filter(r=>r.status!=='hold').reduce((a,r)=>a+r.seats,0);
-    const fi=reqs.reduce((a,r)=>a+placedSubs(r).length,0);
-    sb.innerHTML=`<div class="sc"><div class="sc-lbl">Priority</div><div class="sc-val" style="color:#633806;">${pr}</div></div><div class="sc"><div class="sc-lbl">Active</div><div class="sc-val">${ac}</div></div><div class="sc"><div class="sc-lbl">On hold</div><div class="sc-val" style="color:var(--text-tertiary);">${ho}</div></div><div class="sc"><div class="sc-lbl">Open seats</div><div class="sc-val">${ts}</div></div><div class="sc"><div class="sc-lbl">Filled</div><div class="sc-val" style="color:#085041;">${fi}</div></div><div style="margin-bottom:8px;"></div>`;
+    const pr=reqs.filter(r=>r.status==='priority').length,ac=reqs.filter(r=>r.status==='active').length,ho=reqs.filter(r=>r.status==='hold').length;
+    const ts=reqs.filter(r=>r.status!=='hold').reduce((a,r)=>a+(r.seats||1),0),fi=reqs.reduce((a,r)=>a+placedSubs(r).length,0);
+    sb2.innerHTML=`<div class="sc"><div class="sc-lbl">Priority</div><div class="sc-val" style="color:#633806;">${pr}</div></div><div class="sc"><div class="sc-lbl">Active</div><div class="sc-val">${ac}</div></div><div class="sc"><div class="sc-lbl">On hold</div><div class="sc-val" style="color:var(--text-tertiary);">${ho}</div></div><div class="sc"><div class="sc-lbl">Open seats</div><div class="sc-val">${ts}</div></div><div class="sc"><div class="sc-lbl">Filled</div><div class="sc-val" style="color:#085041;">${fi}</div></div><div style="margin-bottom:8px;"></div>`;
   } else if(page==='board'||page==='list'){
-    const f=getFilteredSubs();
-    const pl=f.filter(s=>s.stage==='placed').length;
-    const ac=f.filter(s=>!['placed','pass','declined'].includes(s.stage)).length;
-    const iv=f.filter(s=>s.stage==='interview_pm'||s.stage==='interview_client').length;
-    const of=f.filter(s=>s.stage==='offer').length;
-    sb.innerHTML=`<div class="sc"><div class="sc-lbl">Total</div><div class="sc-val">${f.length}</div></div><div class="sc"><div class="sc-lbl">Active</div><div class="sc-val">${ac}</div></div><div class="sc"><div class="sc-lbl">Interviewing</div><div class="sc-val">${iv}</div></div><div class="sc"><div class="sc-lbl">Offers</div><div class="sc-val">${of}</div></div><div class="sc"><div class="sc-lbl">Placed</div><div class="sc-val">${pl}</div></div><div style="margin-bottom:8px;"></div>`;
-  } else {sb.innerHTML='';}
+    const f=getFilteredSubs(false),pl=f.filter(s=>s.stage==='placed').length,ac=f.filter(s=>!['placed','pass','declined'].includes(s.stage)).length,iv=f.filter(s=>['interview_pm','interview_client'].includes(s.stage)).length,of=f.filter(s=>s.stage==='offer').length;
+    sb2.innerHTML=`<div class="sc"><div class="sc-lbl">Total</div><div class="sc-val">${f.length}</div></div><div class="sc"><div class="sc-lbl">Active</div><div class="sc-val">${ac}</div></div><div class="sc"><div class="sc-lbl">Interviewing</div><div class="sc-val">${iv}</div></div><div class="sc"><div class="sc-lbl">Offers</div><div class="sc-val">${of}</div></div><div class="sc"><div class="sc-lbl">Placed</div><div class="sc-val">${pl}</div></div><div style="margin-bottom:8px;"></div>`;
+  } else if(page==='archive'){
+    const f=getFilteredSubs(true);
+    sb2.innerHTML=`<div class="sc"><div class="sc-lbl">Archived</div><div class="sc-val">${f.length}</div></div><div class="sc"><div class="sc-lbl">Pass</div><div class="sc-val">${f.filter(s=>s.stage==='pass').length}</div></div><div class="sc"><div class="sc-lbl">Declined</div><div class="sc-val">${f.filter(s=>s.stage==='declined').length}</div></div><div style="margin-bottom:8px;"></div>`;
+  } else sb2.innerHTML='';
 }
 function renderTabs(){
   const area=document.getElementById('ftabs');
-  const allC=[...new Set([...reqs.map(r=>r.client),...subs.map(s=>s.client)])].sort();
-  if(page==='reqs'||page==='board'||page==='list'){
+  if(['reqs','board','list','archive'].includes(page)){
+    const allC=[...new Set([...reqs.map(r=>r.client),...subs.map(s=>s.client)])].filter(Boolean).sort();
     area.style.display='flex';
     area.innerHTML=`<div class="ftab active" onclick="setFilter('all',this)">All clients</div>`+allC.map(c=>`<div class="ftab" onclick="setFilter('${c.replace(/'/g,"\\'")}',this)">${c}</div>`).join('');
-    if(filterClient!=='all'){area.querySelectorAll('.ftab').forEach(t=>{if(t.textContent===filterClient){t.classList.add('active');area.querySelector('.ftab').classList.remove('active');}});}
-  } else {area.style.display='none';}
+    if(filterClient!=='all')area.querySelectorAll('.ftab').forEach(t=>{if(t.textContent===filterClient){t.classList.add('active');area.querySelector('.ftab').classList.remove('active');}});
+  } else area.style.display='none';
 }
 function renderContent(){
-  destroyCharts();
-  const a=document.getElementById('view-area');
+  destroyCharts();const a=document.getElementById('view-area');
   if(page==='reqs')renderReqsBoard(a);
   else if(page==='board')renderSubBoard(a);
-  else if(page==='list')renderSubList(a);
+  else if(page==='list')renderSubList(a,false);
+  else if(page==='archive')renderSubList(a,true);
   else if(page==='biz')renderBiz(a);
   else if(page==='team')renderTeam(a);
 }
-function quickFilter(c,el){filterClient=c;document.querySelectorAll('.ni,.ftab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderAll();}
 
 function renderReqsBoard(a){
   document.getElementById('pg-title').textContent='Open requisitions';
   a.style.overflow='hidden';
   a.innerHTML=`<div class="kb-wrap"><div class="kanban" id="kb"></div></div>`;
-  const board=document.getElementById('kb');
-  const f=getFilteredReqs();
+  const board=document.getElementById('kb'),f=getFilteredReqs();
   REQ_STAGES.forEach(rs=>{
-    const cards=f.filter(r=>r.status===rs.id);
-    const col=document.createElement('div');
+    const cards=f.filter(r=>r.status===rs.id),col=document.createElement('div');
     col.className='kcol '+(rs.id==='priority'?'kcol-wide':'kcol-med');
-    col.innerHTML=`<div class="kch" style="background:${rs.bg};"><span class="kch-label" style="color:${rs.text};">${rs.label}</span><span class="kch-cnt" style="color:${rs.text};">${cards.length} req${cards.length!==1?'s':''}</span></div><div class="kcb" id="kb-${rs.id}">${cards.length===0?'<div style="text-align:center;padding:18px 0;font-size:11px;color:#9a9990;">No reqs</div>':''}</div>`;
+    col.innerHTML=`<div class="kch" style="background:${rs.bg};"><span class="kch-label" style="color:${rs.text};">${rs.label}</span><span class="kch-cnt" style="color:${rs.text};">${cards.length} req${cards.length!==1?'s':''}</span></div><div class="kcb">${cards.length===0?'<div style="text-align:center;padding:18px 0;font-size:11px;color:#9a9990;">No reqs</div>':''}</div>`;
     board.appendChild(col);
     const body=col.querySelector('.kcb');
     cards.forEach(r=>{
-      const active=activeSubs(r);const placed=placedSubs(r);
-      const pct=r.seats>0?Math.min(Math.round((placed.length/r.seats)*100),100):0;
+      const active=activeSubs(r),placed=placedSubs(r),pct=r.seats>0?Math.min(Math.round((placed.length/(r.seats||1))*100),100):0;
       const pc=pct>=100?'#1D9E75':pct>=50?'#BA7517':'#378ADD';
-      const el=document.createElement('div');
-      el.className='rcard'+(rs.id==='priority'?' priority':'');
-      el.onclick=()=>openReqPanel(r.id);
-      el.innerHTML=`<div class="rc-client">${r.client}</div><div class="rc-role">${r.role}</div>${r.clearance?`<div class="rc-detail"><span>Clearance:</span> ${r.clearance}</div>`:''} ${r.salary?`<div class="rc-detail"><span>Salary:</span> ${r.salary}</div>`:''} ${r.recruiter?`<div class="rc-detail"><span>Recruiter:</span> ${r.recruiter}</div>`:`<div class="rc-detail unassigned">Unassigned</div>`} ${r.location?`<div class="rc-detail"><span>Location:</span> ${r.location.length>35?r.location.slice(0,34)+'…':r.location}</div>`:''}<div class="progress-wrap"><div class="prog-label"><span>${active.length} candidate${active.length!==1?'s':''} in play</span><span>${placed.length} / ${r.seats} seat${r.seats!==1?'s':''} filled</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${pc};"></div></div></div>${r.reqid?`<div style="margin-top:6px;"><span class="pill" style="background:#E6F1FB;color:#0C447C;">Req ${r.reqid}</span></div>`:''}`;
+      const el=document.createElement('div');el.className='rcard'+(rs.id==='priority'?' priority':'');el.onclick=()=>openReqPanel(r.id);
+      el.innerHTML=`<div class="rc-client">${r.client}</div><div class="rc-role">${r.role}</div>${r.clearance?`<div class="rc-detail"><span>Clearance:</span> ${r.clearance}</div>`:''} ${r.salary?`<div class="rc-detail"><span>Salary:</span> ${r.salary}</div>`:''} ${r.recruiter?`<div class="rc-detail"><span>Recruiter:</span> ${r.recruiter}</div>`:`<div class="rc-detail" style="color:#D85A30;">Unassigned</div>`} ${r.location?`<div class="rc-detail"><span>Location:</span> ${r.location}</div>`:''}<div class="progress-wrap"><div class="prog-label"><span>${active.length} in play</span><span>${placed.length} / ${r.seats||1} filled</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${pc};"></div></div></div>${r.reqid?`<div style="margin-top:5px;"><span class="pill" style="background:#E6F1FB;color:#0C447C;">Req ${r.reqid}</span></div>`:''}`;
       body.appendChild(el);
     });
   });
 }
-function openReqPanel(id){
-  const r=reqs.find(x=>x.id===id);const rs=rqStg(r.status);
-  const active=activeSubs(r);const placed=placedSubs(r);
+
+async function openReqPanel(id){
+  const r=reqs.find(x=>x.id===id);if(!r)return;
+  const rs=rqStg(r.status),active=activeSubs(r),placed=placedSubs(r);
   document.getElementById('p-name').textContent=r.role;
   document.getElementById('p-sub').textContent=r.client+(r.reqid?' · Req '+r.reqid:'');
-  document.getElementById('p-body').innerHTML=`<div class="psec"><div class="psec-t">Requisition details</div><div class="ir"><span class="ir-l">Status</span><span class="ir-v"><span class="pill" style="background:${rs.bg};color:${rs.text};">${rs.label}</span></span></div><div class="ir"><span class="ir-l">Seats needed</span><span class="ir-v">${r.seats}</span></div><div class="ir"><span class="ir-l">Filled</span><span class="ir-v" style="color:#085041;">${placed.length}</span></div><div class="ir"><span class="ir-l">Clearance</span><span class="ir-v">${r.clearance||'—'}</span></div><div class="ir"><span class="ir-l">Salary</span><span class="ir-v">${r.salary||'—'}</span></div><div class="ir"><span class="ir-l">Location</span><span class="ir-v">${r.location||'—'}</span></div><div class="ir"><span class="ir-l">Recruiter</span><span class="ir-v">${r.recruiter||'Unassigned'}</span></div>${r.reqid?`<div class="ir"><span class="ir-l">Req ID</span><span class="ir-v">${r.reqid}</span></div>`:''}</div><div class="psec"><div class="psec-t">Move to status</div><select class="fi" onchange="changeReqStatus(${r.id},this.value)">${REQ_STAGES.map(s=>`<option value="${s.id}"${s.id===r.status?' selected':''}>${s.label}</option>`).join('')}</select></div>${r.notes?`<div class="psec"><div class="psec-t">Notes</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${r.notes}</div></div>`:''}<div class="psec"><div class="psec-t">Candidates in play (${active.length})</div>${active.length===0?'<div style="font-size:12px;color:var(--text-tertiary);padding:6px 0;">No submissions yet.</div>':''}${active.map(s=>{const st=stg(s.stage);const av=avCol(s.name);return`<div class="cand-row"><div class="av" style="width:26px;height:26px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><div style="flex:1;"><div style="font-weight:500;font-size:12px;">${s.name}</div><div style="font-size:11px;color:var(--text-tertiary);">${s.recruiter} · ${s.date}</div></div><span class="pill" style="background:${st.bg};color:${st.text};">${st.label}</span></div>`;}).join('')}</div><div><button class="btn btn-p btn-sm" onclick="openSubModal()">+ Submit candidate</button></div>`;
+  document.getElementById('p-body').innerHTML=`
+    <div class="psec"><div class="psec-t">Details</div>
+      <div class="ir"><span class="ir-l">Status</span><span class="ir-v"><span class="pill" style="background:${rs.bg};color:${rs.text};">${rs.label}</span></span></div>
+      <div class="ir"><span class="ir-l">Seats</span><span class="ir-v">${r.seats||1}</span></div>
+      <div class="ir"><span class="ir-l">Filled</span><span class="ir-v" style="color:#085041;">${placed.length}</span></div>
+      <div class="ir"><span class="ir-l">Clearance</span><span class="ir-v">${r.clearance||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Salary</span><span class="ir-v">${r.salary||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Location</span><span class="ir-v">${r.location||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Recruiter</span><span class="ir-v">${r.recruiter||'Unassigned'}</span></div>
+      ${r.reqid?`<div class="ir"><span class="ir-l">Req ID</span><span class="ir-v">${r.reqid}</span></div>`:''}
+    </div>
+    <div class="psec"><div class="psec-t">Move to status</div>
+      <select class="fi" onchange="changeReqStatus(${r.id},this.value)">${REQ_STAGES.map(s=>`<option value="${s.id}"${s.id===r.status?' selected':''}>${s.label}</option>`).join('')}</select>
+    </div>
+    ${r.notes?`<div class="psec"><div class="psec-t">Notes</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${r.notes}</div></div>`:''}
+    <div class="psec"><div class="psec-t">Candidates in play (${active.length})</div>
+      ${active.length===0?'<div style="font-size:12px;color:var(--text-tertiary);padding:6px 0;">No submissions yet.</div>':''}
+      ${active.map(s=>{const st=stg(s.stage),av=avCol(s.name);return`<div class="cand-row"><div class="av" style="width:24px;height:24px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.name}</div><div style="font-size:11px;color:var(--text-tertiary);">${s.recruiter||''} · ${fmtDate(s.date)}</div></div><span class="pill" style="background:${st.bg};color:${st.text};">${st.label}</span></div>`;}).join('')}
+    </div>
+    <button class="btn btn-p btn-sm" onclick="openSubModal()">+ Submit candidate</button>`;
   document.getElementById('panel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
 }
-function changeReqStatus(id,ns){reqs.find(x=>x.id===id).status=ns;renderAll();openReqPanel(id);}
+async function changeReqStatus(id,ns){
+  setSyncing(true);await sb.from('reqs').update({status:ns}).eq('id',id);
+  const r=reqs.find(x=>x.id===id);if(r)r.status=ns;
+  setSyncing(false);showToast('Status updated');renderAll();openReqPanel(id);
+}
 function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
 
 function renderSubBoard(a){
   document.getElementById('pg-title').textContent='Submission pipeline';
   a.style.overflow='hidden';
   a.innerHTML=`<div class="kb-wrap"><div class="kanban" id="kb"></div></div>`;
-  const board=document.getElementById('kb');
-  const f=getFilteredSubs();
+  const board=document.getElementById('kb'),f=getFilteredSubs(false);
   ['submitted','screening','interview_pm','interview_client','offer','placed'].forEach(sid=>{
-    const stage=stg(sid);const cards=f.filter(s=>s.stage===sid);
-    const col=document.createElement('div');col.className='kcol kcol-med';
+    const stage=stg(sid),cards=f.filter(s=>s.stage===sid),col=document.createElement('div');
+    col.className='kcol kcol-med';
     col.innerHTML=`<div class="kch" style="background:${stage.bg};"><span class="kch-label" style="color:${stage.text};">${stage.label}</span><span class="kch-cnt" style="color:${stage.text};">${cards.length}</span></div><div class="kcb">${cards.length===0?'<div style="text-align:center;padding:16px 0;font-size:11px;color:#9a9990;">None</div>':''}</div>`;
-    board.appendChild(col);
-    const body=col.querySelector('.kcb');
+    board.appendChild(col);const body=col.querySelector('.kcb');
     cards.forEach(s=>{
-      const av=avCol(s.name);
-      const el=document.createElement('div');el.className='rcard';el.onclick=()=>openSubPanel(s.id);
-      el.innerHTML=`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;"><div class="av" style="width:24px;height:24px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text-primary);">${s.name}</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.3;">${s.role}</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pill" style="background:#E6F1FB;color:#0C447C;">${s.client}</span><span style="font-size:10px;color:var(--text-tertiary);">${s.date}</span></div>${s.clearance?`<div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">${s.clearance}</div>`:''}`;
+      const av=avCol(s.name),el=document.createElement('div');el.className='rcard';el.onclick=()=>openSubPanel(s.id);
+      el.innerHTML=`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;"><div class="av" style="width:24px;height:24px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.name}</div><div style="font-size:11px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.role}</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:4px;"><span class="pill" style="background:#E6F1FB;color:#0C447C;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.client}</span><span style="font-size:10px;color:var(--text-tertiary);">${fmtDate(s.date)}</span></div>${s.clearance?`<div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.clearance}</div>`:''} ${s.resume_text?'<div style="margin-top:4px;"><span class="has-resume">Resume on file</span></div>':''}`;
       body.appendChild(el);
     });
   });
 }
-function openSubPanel(id){
-  const s=subs.find(x=>x.id===id);const st=stg(s.stage);
-  document.getElementById('p-name').textContent=s.name;
-  document.getElementById('p-sub').textContent=s.role+' · '+s.client;
-  document.getElementById('p-body').innerHTML=`<div class="psec"><div class="psec-t">Details</div><div class="ir"><span class="ir-l">Client</span><span class="ir-v">${s.client}</span></div><div class="ir"><span class="ir-l">Recruiter</span><span class="ir-v">${s.recruiter}</span></div><div class="ir"><span class="ir-l">Clearance</span><span class="ir-v">${s.clearance||'—'}</span></div><div class="ir"><span class="ir-l">Salary</span><span class="ir-v">${s.salary||'—'}</span></div><div class="ir"><span class="ir-l">Submitted</span><span class="ir-v">${s.date}</span></div></div><div class="psec"><div class="psec-t">Status</div><select class="fi" onchange="changeSubStage(${s.id},this.value)">${STAGES.map(x=>`<option value="${x.id}"${x.id===s.stage?' selected':''}>${x.label}</option>`).join('')}</select></div><div class="psec"><div class="psec-t">Notes</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${s.notes||'No notes.'}</div></div>`;
-  document.getElementById('panel').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-}
-function changeSubStage(id,ns){subs.find(x=>x.id===id).stage=ns;renderAll();openSubPanel(id);}
 
-function renderSubList(a){
-  document.getElementById('pg-title').textContent='All submissions';
+function renderSubList(a,isArchive){
+  document.getElementById('pg-title').textContent=isArchive?'Candidate archive':'All submissions';
   a.style.overflow='auto';
-  const f=getFilteredSubs();
-  a.innerHTML=`<div class="list-wrap"><table><thead><tr><th>Candidate</th><th>Client</th><th>Role</th><th>Status</th><th>Recruiter</th><th>Clearance</th><th>Date</th></tr></thead><tbody id="lb"></tbody></table></div>`;
+  const f=getFilteredSubs(isArchive);
+  a.innerHTML=`<div class="list-wrap"><table><thead><tr><th>Candidate</th><th>Client</th><th onclick="setSort('position',this)" style="cursor:pointer;">Role &#8597;</th><th onclick="setSort('stage',this)" style="cursor:pointer;">Status &#8597;</th><th>Recruiter</th><th onclick="setSort('clearance',this)" style="cursor:pointer;">Clearance &#8597;</th><th onclick="setSort('date',this)" style="cursor:pointer;">Date &#8597;</th><th>Resume</th></tr></thead><tbody id="lb"></tbody></table></div>`;
   const tbody=document.getElementById('lb');
+  if(f.length===0){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-tertiary);">No candidates found</td></tr>`;return;}
   f.forEach(s=>{
-    const av=avCol(s.name);const st=stg(s.stage);
-    const tr=document.createElement('tr');tr.onclick=()=>openSubPanel(s.id);
-    tr.innerHTML=`<td><div style="display:flex;align-items:center;gap:7px;"><div class="av" style="width:26px;height:26px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><span style="font-weight:500;">${s.name}</span></div></td><td style="color:var(--text-secondary);">${s.client}</td><td style="color:var(--text-secondary);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.role}</td><td><span class="pill" style="background:${st.bg};color:${st.text};">${st.label}</span></td><td style="color:var(--text-secondary);">${s.recruiter}</td><td style="font-size:11px;color:var(--text-secondary);">${s.clearance||'—'}</td><td style="color:var(--text-tertiary);">${s.date}</td>`;
+    const av=avCol(s.name),st=stg(s.stage),tr=document.createElement('tr');tr.onclick=()=>openSubPanel(s.id);
+    tr.innerHTML=`<td><div style="display:flex;align-items:center;gap:7px;"><div class="av" style="width:26px;height:26px;background:${av.bg};color:${av.text};">${initials(s.name)}</div><span style="font-weight:600;">${s.name}</span></div></td><td style="color:var(--text-secondary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.client}</td><td style="color:var(--text-secondary);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.role}</td><td><span class="pill" style="background:${st.bg};color:${st.text};">${st.label}</span></td><td style="color:var(--text-secondary);">${s.recruiter||'—'}</td><td style="font-size:11px;color:var(--text-secondary);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.clearance||'—'}</td><td style="color:var(--text-tertiary);white-space:nowrap;">${fmtDate(s.date)}</td><td>${s.resume_text?'<span class="has-resume">On file</span>':'<span style="font-size:10px;color:var(--text-tertiary);">—</span>'}</td>`;
     tbody.appendChild(tr);
   });
 }
 
-function renderBiz(a){
-  document.getElementById('pg-title').textContent='Business reporting';
-  a.style.overflow='auto';
-  const totalSeats=reqs.filter(r=>r.status!=='hold').reduce((s,r)=>s+r.seats,0);
-  const filled=reqs.reduce((s,r)=>s+placedSubs(r).length,0);
-  const fillRate=totalSeats>0?Math.round((filled/totalSeats)*100):0;
-  const placed=subs.filter(s=>s.stage==='placed').length;
-  const active=subs.filter(s=>!['placed','pass','declined'].includes(s.stage)).length;
-  a.innerHTML=`<div class="rep-wrap"><div class="rgrid" style="grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:20px;"><div class="rcard2"><div class="rl">Open reqs</div><div class="rv">${reqs.filter(r=>r.status!=='hold').length}</div></div><div class="rcard2"><div class="rl">Total seats</div><div class="rv">${totalSeats}</div></div><div class="rcard2"><div class="rl">Filled</div><div class="rv" style="color:#085041;">${filled}</div></div><div class="rcard2"><div class="rl">Fill rate</div><div class="rv">${fillRate}%</div></div><div class="rcard2"><div class="rl">Total submissions</div><div class="rv">${subs.length}</div></div></div><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;"><div><div class="rep-sec-t">Reqs by client</div><div style="position:relative;height:240px;"><canvas id="biz-reqs"></canvas></div></div><div><div class="rep-sec-t">Submissions by status</div><div style="position:relative;height:200px;"><canvas id="biz-stage"></canvas></div><div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;">${STAGES.map(s=>`<span style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text-secondary);"><span style="width:7px;height:7px;border-radius:2px;background:${s.text};"></span>${s.label}</span>`).join('')}</div></div></div></div>`;
-  const clientRC=CLIENTS.map(c=>({c,n:reqs.filter(r=>r.client===c).length})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
-  const rc=new Chart(document.getElementById('biz-reqs'),{type:'bar',data:{labels:clientRC.map(x=>x.c),datasets:[{data:clientRC.map(x=>x.n),backgroundColor:'#7F77DD',borderRadius:3,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.06)'}},y:{ticks:{font:{size:10}},grid:{display:false}}}}});charts.push(rc);
-  const sc=new Chart(document.getElementById('biz-stage'),{type:'doughnut',data:{labels:STAGES.map(s=>s.label),datasets:[{data:STAGES.map(s=>subs.filter(x=>x.stage===s.id).length),backgroundColor:STAGES.map(s=>s.text),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}});charts.push(sc);
+async function openSubPanel(id){
+  const s=subs.find(x=>x.id===id);if(!s)return;
+  document.getElementById('p-name').textContent=s.name;
+  document.getElementById('p-sub').textContent=s.role+' · '+s.client;
+  const{data:notes}=await sb.from('candidate_notes').select('*').eq('submission_id',id).order('created_at',{ascending:false});
+  const notesList=notes||[];
+  document.getElementById('p-body').innerHTML=`
+    <div class="psec"><div class="psec-t">Details</div>
+      <div class="ir"><span class="ir-l">Client</span><span class="ir-v">${s.client}</span></div>
+      <div class="ir"><span class="ir-l">Recruiter</span><span class="ir-v">${s.recruiter||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Clearance</span><span class="ir-v">${s.clearance||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Salary</span><span class="ir-v">${s.salary||'—'}</span></div>
+      <div class="ir"><span class="ir-l">Date submitted</span><span class="ir-v">${fmtDate(s.date)}</span></div>
+    </div>
+    <div class="psec"><div class="psec-t">Status</div>
+      <select class="fi" onchange="changeSubStage(${s.id},this.value)">${STAGES.map(x=>`<option value="${x.id}"${x.id===s.stage?' selected':''}>${x.label}</option>`).join('')}</select>
+      ${!['pass','declined'].includes(s.stage)?`<button class="btn btn-danger btn-sm" style="margin-top:7px;" onclick="archiveCandidate(${s.id})">Move to archive</button>`:''}
+    </div>
+    <div class="psec"><div class="psec-t">Notes (${notesList.length})</div>
+      <div id="notes-list" style="margin-bottom:8px;">${notesList.length===0?'<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;">No notes yet.</div>':''}${notesList.map(n=>`<div class="note-item"><div class="note-text">${n.note}</div><div class="note-meta">${n.author||'Team'} · ${fmtDate(n.created_at)}</div></div>`).join('')}</div>
+      <textarea class="fi" id="new-note-text" style="height:60px;resize:none;margin-bottom:6px;" placeholder="Add a note..."></textarea>
+      <div style="display:flex;gap:6px;">
+        <input class="fi" id="note-author" placeholder="Your name" style="font-size:11px;">
+        <button class="btn btn-p btn-sm" onclick="saveNote(${s.id})">Save</button>
+      </div>
+    </div>
+    <div class="psec"><div class="psec-t">Resume</div>
+      ${s.resume_text
+        ?`<div class="resume-box" id="resume-display">${s.resume_text}</div><button class="btn btn-sm" style="margin-top:7px;" onclick="showResumeEditor(${s.id})">Edit</button>`
+        :`<textarea class="fi" id="resume-input-${s.id}" style="height:110px;resize:vertical;" placeholder="Paste resume text here (copy from PDF or Word)..."></textarea><button class="btn btn-p btn-sm" style="margin-top:6px;" onclick="saveResume(${s.id})">Save resume</button>`}
+    </div>`;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
 }
 
-function renderTeam(a){
-  document.getElementById('pg-title').textContent='Team reporting';
-  a.style.overflow='auto';
-  const recData=RECRUITERS.map(r=>{
-    const mine=subs.filter(s=>s.recruiter===r);
-    const placed=mine.filter(s=>s.stage==='placed').length;
-    const active=mine.filter(s=>!['placed','pass','declined'].includes(s.stage)).length;
-    const rate=mine.length?Math.round((placed/mine.length)*100):0;
-    const myReqs=reqs.filter(x=>x.recruiter===r).length;
-    return{name:r,total:mine.length,placed,active,rate,reqs:myReqs};
-  }).sort((a,b)=>b.placed-a.placed||b.total-a.total);
-  const top=recData[0];
-  a.innerHTML=`<div class="rep-wrap"><div class="rgrid" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:20px;"><div class="rcard2"><div class="rl">Team size</div><div class="rv">5</div></div><div class="rcard2"><div class="rl">Total submissions</div><div class="rv">${subs.length}</div></div><div class="rcard2"><div class="rl">Top performer</div><div class="rv" style="font-size:14px;padding-top:2px;">${top.name}</div><div class="rs">${top.placed} placements</div></div><div class="rcard2"><div class="rl">Avg placement rate</div><div class="rv">${Math.round(recData.reduce((a,r)=>a+r.rate,0)/recData.length)}%</div></div></div><div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;"><div><div class="rep-sec-t">Leaderboard</div><div id="lb-cont"></div></div><div><div class="rep-sec-t">Activity</div><div style="position:relative;height:220px;"><canvas id="team-ch"></canvas></div></div></div></div>`;
-  const avBgs=['#EEEDFE','#E6F1FB','#E1F5EE','#FAEEDA','#FAECE7'];
-  const avTs=['#3C3489','#0C447C','#085041','#633806','#993C1D'];
-  const lbc=document.getElementById('lb-cont');
-  recData.forEach((r,i)=>{lbc.innerHTML+=`<div class="lb-row"><div class="av" style="width:30px;height:30px;font-size:11px;background:${avBgs[i]};color:${avTs[i]};">${r.name[0]}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${r.name}</div><div style="font-size:11px;color:var(--text-secondary);">${r.total} submissions · ${r.reqs} reqs</div></div><div style="text-align:right;"><div style="font-size:12px;font-weight:600;">${r.placed} placed</div><div style="font-size:10px;color:var(--text-tertiary);">${r.rate}% rate</div></div></div>`;});
-  const tc=new Chart(document.getElementById('team-ch'),{type:'bar',data:{labels:recData.map(r=>r.name),datasets:[{label:'Submissions',data:recData.map(r=>r.total),backgroundColor:'#378ADD',borderRadius:3,borderWidth:0},{label:'Placed',data:recData.map(r=>r.placed),backgroundColor:'#1D9E75',borderRadius:3,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}}}}});charts.push(tc);
+function showResumeEditor(id){
+  const s=subs.find(x=>x.id===id);if(!s)return;
+  const box=document.getElementById('resume-display');if(!box)return;
+  const parent=box.parentNode;
+  box.remove();
+  parent.querySelector('.btn').remove();
+  parent.insertAdjacentHTML('beforeend',`<textarea class="fi" id="resume-input-${id}" style="height:110px;resize:vertical;">${s.resume_text||''}</textarea><button class="btn btn-p btn-sm" style="margin-top:6px;" onclick="saveResume(${id})">Save resume</button>`);
+}
+async function saveResume(id){
+  const ta=document.getElementById(`resume-input-${id}`);if(!ta)return;
+  setSyncing(true);await sb.from('submissions').update({resume_text:ta.value.trim()}).eq('id',id);
+  const s=subs.find(x=>x.id===id);if(s)s.resume_text=ta.value.trim();
+  setSyncing(false);showToast('Resume saved');openSubPanel(id);
+}
+async function saveNote(subId){
+  const text=document.getElementById('new-note-text')?.value.trim();
+  const author=document.getElementById('note-author')?.value.trim()||'Team';
+  if(!text)return;
+  setSyncing(true);await sb.from('candidate_notes').insert({submission_id:subId,note:text,author});
+  setSyncing(false);showToast('Note saved');openSubPanel(subId);
+}
+async function changeSubStage(id,ns){
+  setSyncing(true);await sb.from('submissions').update({stage:ns}).eq('id',id);
+  const s=subs.find(x=>x.id===id);if(s)s.stage=ns;
+  setSyncing(false);showToast('Status updated');renderAll();openSubPanel(id);
+}
+async function archiveCandidate(id){
+  setSyncing(true);await sb.from('submissions').update({stage:'pass'}).eq('id',id);
+  const s=subs.find(x=>x.id===id);if(s)s.stage='pass';
+  setSyncing(false);showToast('Moved to archive');closePanel();renderAll();
 }
 
 function openReqModal(){
   document.getElementById('rq-client').innerHTML=CLIENTS.map(c=>`<option>${c}</option>`).join('');
-  ['rq-role','rq-reqid','rq-sal','rq-loc','rq-notes'].forEach(id=>document.getElementById(id).value='');
+  ['rq-role','rq-reqid','rq-sal','rq-loc','rq-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('rq-seats').value='1';
   document.getElementById('req-modal').classList.add('open');
 }
 function closeReqModal(){document.getElementById('req-modal').classList.remove('open');}
 document.getElementById('req-modal').onclick=e=>{if(e.target===document.getElementById('req-modal'))closeReqModal();};
-function addReq(){
-  const role=document.getElementById('rq-role').value.trim();if(!role)return;
-  reqs.push({id:nextRid++,client:document.getElementById('rq-client').value,role,status:document.getElementById('rq-status').value,seats:parseInt(document.getElementById('rq-seats').value)||1,reqid:document.getElementById('rq-reqid').value.trim(),recruiter:document.getElementById('rq-rec').value,clearance:document.getElementById('rq-clr').value,salary:document.getElementById('rq-sal').value.trim(),location:document.getElementById('rq-loc').value.trim(),notes:document.getElementById('rq-notes').value.trim()});
-  closeReqModal();renderAll();
+async function addReq(){
+  const role=document.getElementById('rq-role').value.trim();if(!role){showToast('Role is required');return;}
+  const nr={client:document.getElementById('rq-client').value,role,status:document.getElementById('rq-status').value,seats:parseInt(document.getElementById('rq-seats').value)||1,reqid:document.getElementById('rq-reqid').value.trim(),recruiter:document.getElementById('rq-rec').value,clearance:document.getElementById('rq-clr').value,salary:document.getElementById('rq-sal').value.trim(),location:document.getElementById('rq-loc').value.trim(),notes:document.getElementById('rq-notes').value.trim()};
+  setSyncing(true);const{data}=await sb.from('reqs').insert(nr).select();if(data)reqs.unshift(data[0]);
+  setSyncing(false);showToast('Req added');closeReqModal();renderAll();
 }
+
 function populateReqDrop(){
-  const client=document.getElementById('s-client').value;
-  const cr=reqs.filter(r=>r.client===client);
+  const client=document.getElementById('s-client').value,cr=reqs.filter(r=>r.client===client);
   document.getElementById('s-req').innerHTML=`<option value="">— select req —</option>`+cr.map(r=>`<option value="${r.id}">${r.role}${r.reqid?' ('+r.reqid+')':''}</option>`).join('');
 }
 function openSubModal(){
   document.getElementById('s-client').innerHTML=CLIENTS.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('s-name').value='';document.getElementById('s-notes').value='';
-  populateReqDrop();
-  document.getElementById('sub-modal').classList.add('open');
+  ['s-name','s-notes','s-resume'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  populateReqDrop();document.getElementById('sub-modal').classList.add('open');
 }
 function closeSubModal(){document.getElementById('sub-modal').classList.remove('open');}
 document.getElementById('sub-modal').onclick=e=>{if(e.target===document.getElementById('sub-modal'))closeSubModal();};
-function addSub(){
-  const name=document.getElementById('s-name').value.trim();if(!name)return;
-  const client=document.getElementById('s-client').value;
-  const reqId=parseInt(document.getElementById('s-req').value)||null;
-  const req=reqs.find(r=>r.id===reqId);
-  const d=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  subs.unshift({id:nextSid++,name,client,role:req?req.role:'',reqId,stage:document.getElementById('s-stage').value,recruiter:document.getElementById('s-rec').value,clearance:req?req.clearance:'',salary:req?req.salary:'',date:d,notes:document.getElementById('s-notes').value.trim()});
-  closeSubModal();renderAll();
+async function addSub(){
+  const name=document.getElementById('s-name').value.trim();if(!name){showToast('Candidate name is required');return;}
+  const client=document.getElementById('s-client').value,reqId=parseInt(document.getElementById('s-req').value)||null,req=reqs.find(r=>r.id===reqId);
+  const ns={name,client,role:req?req.role:'',req_id:reqId,stage:document.getElementById('s-stage').value,recruiter:document.getElementById('s-rec').value,clearance:document.getElementById('s-clr').value||(req?req.clearance:''),salary:req?req.salary:'',date:new Date().toISOString().split('T')[0],notes:document.getElementById('s-notes').value.trim(),resume_text:document.getElementById('s-resume').value.trim()};
+  setSyncing(true);const{data}=await sb.from('submissions').insert(ns).select();if(data)subs.unshift(data[0]);
+  setSyncing(false);showToast('Submission added');closeSubModal();renderAll();
 }
 
-renderAll();
+function renderBiz(a){
+  document.getElementById('pg-title').textContent='Business reporting';
+  a.style.overflow='auto';
+  const ts=reqs.filter(r=>r.status!=='hold').reduce((s,r)=>s+(r.seats||1),0),fi=reqs.reduce((s,r)=>s+placedSubs(r).length,0),fr=ts>0?Math.round((fi/ts)*100):0;
+  a.innerHTML=`<div class="rep-wrap"><div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:20px;"><div class="sc"><div class="sc-lbl">Open reqs</div><div class="sc-val">${reqs.filter(r=>r.status!=='hold').length}</div></div><div class="sc"><div class="sc-lbl">Open seats</div><div class="sc-val">${ts}</div></div><div class="sc"><div class="sc-lbl">Filled</div><div class="sc-val" style="color:#085041;">${fi}</div></div><div class="sc"><div class="sc-lbl">Fill rate</div><div class="sc-val">${fr}%</div></div><div class="sc"><div class="sc-lbl">Total subs</div><div class="sc-val">${subs.length}</div></div></div><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;"><div><div class="rep-sec-t">Reqs by client</div><div style="position:relative;height:240px;"><canvas id="biz-reqs"></canvas></div></div><div><div class="rep-sec-t">Submissions by status</div><div style="position:relative;height:200px;"><canvas id="biz-stage"></canvas></div><div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;">${STAGES.map(s=>`<span style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text-secondary);"><span style="width:7px;height:7px;border-radius:2px;background:${s.text};"></span>${s.label}</span>`).join('')}</div></div></div></div>`;
+  const crc=CLIENTS.map(c=>({c,n:reqs.filter(r=>r.client===c).length})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  charts.push(new Chart(document.getElementById('biz-reqs'),{type:'bar',data:{labels:crc.map(x=>x.c),datasets:[{data:crc.map(x=>x.n),backgroundColor:'#7F77DD',borderRadius:3,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.06)'}},y:{ticks:{font:{size:10}},grid:{display:false}}}}}));
+  charts.push(new Chart(document.getElementById('biz-stage'),{type:'doughnut',data:{labels:STAGES.map(s=>s.label),datasets:[{data:STAGES.map(s=>subs.filter(x=>x.stage===s.id).length),backgroundColor:STAGES.map(s=>s.text),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}}));
+}
+
+function renderTeam(a){
+  document.getElementById('pg-title').textContent='Team reporting';
+  a.style.overflow='auto';
+  const rd=RECRUITERS.map(r=>{const m=subs.filter(s=>s.recruiter===r),pl=m.filter(s=>s.stage==='placed').length,ac=m.filter(s=>!['placed','pass','declined'].includes(s.stage)).length;return{name:r,total:m.length,placed:pl,active:ac,rate:m.length?Math.round((pl/m.length)*100):0,reqs:reqs.filter(x=>x.recruiter===r).length};}).sort((a,b)=>b.placed-a.placed||b.total-a.total);
+  const top=rd[0]||{name:'—',placed:0};
+  a.innerHTML=`<div class="rep-wrap"><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:20px;"><div class="sc"><div class="sc-lbl">Team size</div><div class="sc-val">5</div></div><div class="sc"><div class="sc-lbl">Total submissions</div><div class="sc-val">${subs.length}</div></div><div class="sc"><div class="sc-lbl">Top performer</div><div class="sc-val" style="font-size:14px;padding-top:2px;">${top.name}</div><div style="font-size:11px;color:var(--text-secondary);">${top.placed} placements</div></div><div class="sc"><div class="sc-lbl">Avg placement rate</div><div class="sc-val">${rd.length?Math.round(rd.reduce((a,r)=>a+r.rate,0)/rd.length):0}%</div></div></div><div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;"><div><div class="rep-sec-t">Leaderboard</div><div id="lb-cont"></div></div><div><div class="rep-sec-t">Activity</div><div style="position:relative;height:220px;"><canvas id="team-ch"></canvas></div></div></div></div>`;
+  const ab=['#EEEDFE','#E6F1FB','#E1F5EE','#FAEEDA','#FAECE7'],at=['#3C3489','#0C447C','#085041','#633806','#993C1D'],lbc=document.getElementById('lb-cont');
+  rd.forEach((r,i)=>{lbc.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border-light);"><div class="av" style="width:30px;height:30px;font-size:11px;background:${ab[i%5]};color:${at[i%5]};">${r.name[0]}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${r.name}</div><div style="font-size:11px;color:var(--text-secondary);">${r.total} subs · ${r.reqs} reqs</div></div><div style="text-align:right;"><div style="font-size:12px;font-weight:600;">${r.placed} placed</div><div style="font-size:10px;color:var(--text-tertiary);">${r.rate}% rate</div></div></div>`;});
+  charts.push(new Chart(document.getElementById('team-ch'),{type:'bar',data:{labels:rd.map(r=>r.name),datasets:[{label:'Submissions',data:rd.map(r=>r.total),backgroundColor:'#378ADD',borderRadius:3,borderWidth:0},{label:'Placed',data:rd.map(r=>r.placed),backgroundColor:'#1D9E75',borderRadius:3,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}}}}}}));
+}
+
+loadData();
 </script>
 </body>
 </html>
