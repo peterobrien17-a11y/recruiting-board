@@ -234,6 +234,8 @@ tr:hover td{background:var(--bg-secondary);cursor:pointer;}
 const SUPABASE_URL='https://fjojakpqjoxleaegstvj.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqb2pha3Bxam94bGVhZWdzdHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MTE2MzYsImV4cCI6MjA5MDQ4NzYzNn0.otUIC7drQpy8opFLjplPIMdfIIgMZ1lSyBS6VgmcZpM';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SEED_REQS=[];
+const SEED_SUBS=[];
 
 const CLIENTS=['Rapid Strategy','SecureStrux','Nemean Solutions','Accelera Solutions','Teksynap','Bridge Defense','PatriotIQ','Cymertek','Alphasix','Maximus','FederatedIT','I2X','SSATI','Weeghman & Briggs','Saliense'];
 const STAGES=[
@@ -319,14 +321,7 @@ function subsForReq(r){return subs.filter(s=>s.req_id===r.id||(s.client===r.clie
 function activeSubs(r){return subsForReq(r).filter(s=>!['pass','declined'].includes(s.stage));}
 function placedSubs(r){return subsForReq(r).filter(s=>s.stage==='placed');}
 
-async function seedIfEmpty(){
-  const{data:ex}=await sb.from('reqs').select('id').limit(1);
-  if(!ex||ex.length===0){
-    await sb.from('reqs').insert(SEED_REQS);
-    await sb.from('submissions').insert(SEED_SUBS);
-    showToast('Database initialized with your data!');
-  }
-}
+async function seedIfEmpty(){}
 async function loadData(){
   setSyncing(true);
   try{
